@@ -1,0 +1,40 @@
+seed: 42
+data_dir: data/raw
+results_dir: results
+n_jobs: 1                 # threads for tree ensembles
+
+cv:
+  outer_folds: 5
+  inner_folds: 3          # hyperparameter tuning inside each training fold
+  seeds_per_fold: 3       # for stochastic models (VQC, hybrid QNN, MLP)
+
+qubits: [4, 6, 8]
+angle_range: [0.0, 3.141592653589793]
+
+datasets:
+  german_credit:
+    file: german.data
+  bank_churn:
+    file: Churn_Modelling.csv
+    learning_curve_sizes: [500, 1000, 2000, 4000]  # the full 8,000-sample training fold comes from the main grid
+  ulb_fraud:
+    file: creditcard.csv
+    drop_duplicates: true # removes 1,081 exact duplicate rows (19 frauds)
+    train_neg_per_pos: 4  # legitimate:fraud ratio in training folds; test folds keep the natural rate
+
+torch:                    # shared training schedule for MLP, VQC, hybrid QNN, matched MLP; also runs QSVC kernels
+  epochs: 30
+  batch_size: 128
+  device: cpu              # cuda on a GPU node
+
+tuning:
+  n_configs: 20            # same budget for every model
+
+grid:
+  classical: [lr, svm_linear, svm_rbf, rf, xgboost, lightgbm, mlp]
+  quantum: [qsvc, vqc]
+  hybrid: [hqnn, mlp_matched]
+  learning_curve:
+    dataset: bank_churn
+    models: [lr, svm_rbf, xgboost, mlp, qsvc, vqc, hqnn, mlp_matched]
+    qubits: 8              # classical models use the full feature set
